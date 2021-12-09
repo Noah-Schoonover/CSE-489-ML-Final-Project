@@ -1,0 +1,348 @@
+<!doctype html>
+<html>
+<head>
+<title>ML Digit ID</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0" />
+<script src="lib/jquery/jquery-1.8.2.min.js"></script>
+<style type="text/css">
+    body {
+        margin:0px;
+        width:100%;
+        height:100%;
+        font-family:Arial;
+        /* prevent text selection on ui */
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        /* prevent scrolling in windows phone */
+        -ms-touch-action: none;
+        /* prevent selection highlight */
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        font-size: 18px;
+        line-height: 2;
+        text-align: justify;
+    }
+
+    .header {
+        float: left;
+        background-color: #222;
+        text-align: center;
+        width: 100%;
+        padding:6px;
+    }
+    .title {
+        width: auto;
+        line-height: 32px;
+        font-size: 20px;
+        font-weight: bold;
+        color: #eee;
+        text-shadow: 0px -1px #000;
+        padding:0 60px;
+    }
+    .navbtn {
+        cursor: pointer;
+        float:left;
+        padding: 6px 10px;
+        font-weight: bold;
+        line-height: 18px;
+        font-size: 14px;
+        color: #eee;
+        text-shadow: 0px -1px #000;
+        border: solid 1px #111;
+        border-radius: 4px;
+        background-color: #404040;
+        box-shadow: 0 0 1px 1px #555,inset 0 1px 0 0 #666;
+    }
+    .navbtn-hover, .navbtn:active {
+        color: #222;
+        text-shadow: 0px 1px #aaa;
+        background-color: #aaa;
+        box-shadow: 0 0 1px 1px #444,inset 0 1px 0 0 #ccc;
+    }
+
+    #canvasDiv{
+        float: left;
+        padding: 5px;
+        background-color:#ddd;
+    }
+    #page{
+    }
+    #resultDiv{
+        float: left;
+        border: 1px solid blue;
+    }
+    #result{
+        font-size: 100px;
+        font-family: monospace;
+    }
+    #canvas{
+        cursor:crosshair ;
+        background-color:#fff;
+    }
+
+</style>
+<script type="text/javascript">
+
+    var ctx, color = "#000";
+
+    $(document).ready(function () {
+
+    	// setup a new canvas for drawing wait for device init
+        setTimeout(function(){
+    	   newCanvas();
+        }, 1000);
+
+    	// link the new button with newCanvas() function
+    	$("#new").click(function() {
+    		newCanvas();
+    	});
+    });
+
+    // function to setup a new canvas for drawing
+    function newCanvas(){
+
+        var canvas = '<canvas id="canvas" width="400px" height="400px"></canvas>';
+    	$("#canvasDiv").html(canvas);
+        var can=document.getElementById("canvas");
+
+        // setup canvas
+    	ctx=can.getContext("2d");
+
+        ctx.strokeStyle = "#FF0000";
+        ctx.beginPath();
+        ctx.rect(100, 55, 200, 285);
+        ctx.stroke();
+
+    	ctx.strokeStyle = color;
+    	ctx.lineWidth = 35;
+        ctx.lineCap = 'round';
+
+    	// setup to trigger drawing on mouse or touch
+    	 $("#canvas").drawTouch();
+        // $("#canvas").drawPointer();
+
+        $("#result").text("")
+
+        var lastEvent;
+        var mouseDown;
+
+        //On mouse events on the canvas:
+        $("#canvas").mousedown(function(e) {
+          //On mousedown, storing the starting coordinates and enable the drawing.
+          lastEvent = e; //saving the starting coordinates
+          mouseDown = true; //drawing enabled
+        }).mousemove(function(e) {
+          //On mousemove draws the path, change the style, stroke the line, update the coordinates.
+          if (mouseDown) {
+            ctx.beginPath(); //begin the path
+            ctx.moveTo(lastEvent.offsetX, lastEvent.offsetY); //starting coordinates
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke(); //draw the path
+            lastEvent = e; //replacing the coordinates
+          }
+        }).mouseup(function() {
+            //On mouseup drawing disabled
+            mouseDown = false;
+
+            resizeTo(can, 28);
+
+            //testSocket();
+
+        }).mouseleave(function(){
+
+          if(mouseDown) {
+              $("#canvas").mouseup();
+          }
+
+        });
+    }
+
+    function resizeTo(canvas, size){
+        console.log("getting resized image!");
+        // size is used for width and height for square images
+
+        var tempCanvas=document.createElement("canvas");
+        var tctx=tempCanvas.getContext("2d")
+
+        var cw=canvas.width;
+        var ch=canvas.height;
+        tempCanvas.width=size;
+        tempCanvas.height=size;
+        var ctx=canvas.getContext('2d');
+		
+		////////////////////////////////////////////////////////////////////
+		var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height),
+			data = imageData.data,
+			getRBG = function(x, y) {
+				var r = data[(canvas.width*y + x) * 4],
+					g = data[(canvas.width*y + x) * 4 + 1],
+					b = data[(canvas.width*y + x) * 4 + 3];
+				
+				return {
+					red: r,
+					green: g,
+					blue: b
+				};
+			},
+			isWhite = function (rgb) {
+					  return rgb.red == 0 && rgb.green == 0 && rgb.blue == 0;
+					},
+			scanY = function (fromTop) {
+					  var offset = fromTop ? 1 : -1;
+
+					  // loop through each row
+					  for(var y = fromTop ? 0 : canvas.height - 1; fromTop ? (y < canvas.height) : (y > -1); y += offset) {
+
+						// loop through each column
+						for(var x = 0; x < canvas.width; x++) {
+							if (!isWhite(getRBG(x, y))) {
+								return y;                        
+							}      
+						}
+					}
+					return null; // all image is white
+				},
+			scanX = function (fromLeft) {
+					  var offset = fromLeft? 1 : -1;
+
+					  // loop through each column
+					  for(var x = fromLeft ? 0 : canvas.width - 1; fromLeft ? (x < canvas.width) : (x > -1); x += offset) {
+
+						// loop through each row
+						for(var y = 0; y < canvas.height; y++) {
+							if (!isWhite(getRBG(x, y))) {
+								console.log()
+								return x;                        
+							}      
+						}
+					}
+					return null; // all image is white
+				};
+
+
+		var cropTop = scanY(true),
+			cropBottom = scanY(false),
+			cropLeft = scanX(true),
+			cropRight = scanX(false);
+			cropWidth = cropRight - cropLeft,
+			cropHeight = cropBottom - cropTop;
+			console.log(cropTop, cropBottom, cropLeft, cropRight);
+			console.log(cropWidth, cropHeight);
+		
+		var $croppedCanvas = $("<canvas>").attr({ width: cropWidth, height: cropHeight });
+		
+		// finally crop the guy
+		$croppedCanvas[0].getContext("2d").drawImage(canvas,
+			cropLeft, cropTop, cropWidth, cropHeight,
+			0, 0, cropWidth, cropHeight);
+		
+		$("body").
+			append("<p>same image with white spaces cropped:</p>").
+			append($croppedCanvas);
+		// cropTop is the last topmost white row. Above this row all is white
+		// cropBottom is the last bottommost white row. Below this row all is white
+		// cropLeft is the last leftmost white column.
+		// cropRight is the last rightmost white column.
+		
+		//////////////////////////////////////////////////////////////////
+
+		tctx.drawImage(canvas,0,0,cw,ch,0,0,size,size);
+        var img = new Image();
+        img.src = tempCanvas.toDataURL();
+        $("img").remove();
+        $("#canvasDiv").append(img);
+        imgData = tctx.getImageData(0,0,tempCanvas.width,tempCanvas.height);
+
+        gsData = new Array(imgData.data.length / 4);
+        console.log("gsData length: " + gsData.length);
+
+        for(i = 0; i < imgData.data.length; i += 4) {
+            gsData[i/4] = imgData.data[i+3];
+        }
+		
+		console.log("image data: " + gsData);		
+		
+
+        // Create WebSocket connection.
+        const socket = new WebSocket('ws://127.0.0.1:8765');
+
+        socket.onopen = function() {
+            socket.send(JSON.stringify(gsData));
+        };
+
+        socket.onmessage = function(s) {
+            $("#result").text(s.data)
+        };
+    }
+
+
+    // prototype to	start drawing on touch using canvas moveTo and lineTo
+    $.fn.drawTouch = function() {
+    	var start = function(e) {
+            e = e.originalEvent;
+    		ctx.beginPath();
+    		x = e.changedTouches[0].pageX;
+    		y = e.changedTouches[0].pageY-44;
+    		ctx.moveTo(x,y);
+    	};
+    	var move = function(e) {
+    		e.preventDefault();
+            e = e.originalEvent;
+    		x = e.changedTouches[0].pageX;
+    		y = e.changedTouches[0].pageY-44;
+    		ctx.lineTo(x,y);
+    		ctx.stroke();
+    	};
+    	$(this).on("touchstart", start);
+    	$(this).on("touchmove", move);
+    };
+
+    // prototype to	start drawing on pointer(microsoft ie) using canvas moveTo and lineTo
+    $.fn.drawPointer = function() {
+    	var start = function(e) {
+            e = e.originalEvent;
+    		ctx.beginPath();
+    		x = e.pageX;
+    		y = e.pageY-44;
+    		ctx.moveTo(x,y);
+    	};
+    	var move = function(e) {
+    		e.preventDefault();
+            e = e.originalEvent;
+    		x = e.pageX;
+    		y = e.pageY-44;
+    		ctx.lineTo(x,y);
+    		ctx.stroke();
+        };
+    	$(this).on("MSPointerDown", start);
+    	$(this).on("MSPointerMove", move);
+    };
+
+</script>
+</head>
+
+<body>
+
+    <div id="page">
+        <div class="header">
+    		<a id="new" class="navbtn">New</a>
+            <div class="title">Handwritten Digit Identifier with Machine Learning</div>
+        </div>
+        <div id="canvasDiv">
+            <p style="text-align:center">Loading Canvas...</p>
+        </div>
+        <div id="resultDiv"><span id="result"></span></div>
+        <br style="clear: left;" />
+    </div>
+
+    <div style="margin: 50px 15px 20px 15px; max-width: 900px;">
+
+        Use the mouse to draw a digit (0-9) in the canvas. The input will be queried in a machine learning
+        model as soon as the mouse button is released. The result will be displayed in
+        a blue box. For the best accuracy, try to draw the digit filled and centered within the red box
+        on the canvas.
+    </div>
+
+</body>
+</html>
