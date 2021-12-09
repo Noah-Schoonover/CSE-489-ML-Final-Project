@@ -111,7 +111,7 @@
 
         ctx.strokeStyle = "#FF0000";
         ctx.beginPath();
-        ctx.rect(100, 55, 200, 285);
+        //ctx.rect(100, 55, 200, 285);
         ctx.stroke();
 
     	ctx.strokeStyle = color;
@@ -162,13 +162,8 @@
         console.log("getting resized image!");
         // size is used for width and height for square images
 
-        var tempCanvas=document.createElement("canvas");
-        var tctx=tempCanvas.getContext("2d")
-
         var cw=canvas.width;
         var ch=canvas.height;
-        tempCanvas.width=size;
-        tempCanvas.height=size;
         var ctx=canvas.getContext('2d');
 		
 		////////////////////////////////////////////////////////////////////
@@ -178,6 +173,8 @@
 				var r = data[(canvas.width*y + x) * 4],
 					g = data[(canvas.width*y + x) * 4 + 1],
 					b = data[(canvas.width*y + x) * 4 + 3];
+					
+				if (r != 0) { b = 0; }
 				
 				return {
 					red: r,
@@ -186,7 +183,7 @@
 				};
 			},
 			isWhite = function (rgb) {
-					  return rgb.red == 0 && rgb.green == 0 && rgb.blue == 0;
+					  return rgb.blue == 0;
 					},
 			scanY = function (fromTop) {
 					  var offset = fromTop ? 1 : -1;
@@ -230,15 +227,16 @@
 			console.log(cropTop, cropBottom, cropLeft, cropRight);
 			console.log(cropWidth, cropHeight);
 		
-		var $croppedCanvas = $("<canvas>").attr({ width: cropWidth, height: cropHeight });
+		var $croppedCanvas = $("<canvas>").attr({ width: cropWidth, height: cropHeight, id: 'debugCanvas' });
 		
 		// finally crop the guy
 		$croppedCanvas[0].getContext("2d").drawImage(canvas,
 			cropLeft, cropTop, cropWidth, cropHeight,
 			0, 0, cropWidth, cropHeight);
 		
+		$("[id=debugCanvas]").remove();
 		$("body").
-			append("<p>same image with white spaces cropped:</p>").
+			append("<p id='debugCanvas'>cropped canvas:</p>").
 			append($croppedCanvas);
 		// cropTop is the last topmost white row. Above this row all is white
 		// cropBottom is the last bottommost white row. Below this row all is white
@@ -247,7 +245,21 @@
 		
 		//////////////////////////////////////////////////////////////////
 
-		tctx.drawImage(canvas,0,0,cw,ch,0,0,size,size);
+		var centeredCanvas=document.createElement("canvas");
+        var cctx=centeredCanvas.getContext("2d")
+        centeredCanvas.width=canvas.width;
+        centeredCanvas.height=canvas.height;
+		centeredCanvas.id = 'debugCanvas'
+		cctx.drawImage($croppedCanvas[0],100, 55, 200, 285);
+		$("body").
+			append("<p  id='debugCanvas'>centered canvas:</p>").
+			append(centeredCanvas);
+
+		var tempCanvas=document.createElement("canvas");
+        var tctx=tempCanvas.getContext("2d")
+        tempCanvas.width=size;
+        tempCanvas.height=size;
+		tctx.drawImage(centeredCanvas,0,0,size,size);
         var img = new Image();
         img.src = tempCanvas.toDataURL();
         $("img").remove();
@@ -258,6 +270,9 @@
         console.log("gsData length: " + gsData.length);
 
         for(i = 0; i < imgData.data.length; i += 4) {
+            if (imgData.data[i+3]) {
+				gsData[i/4] = 0;
+			}
             gsData[i/4] = imgData.data[i+3];
         }
 		
