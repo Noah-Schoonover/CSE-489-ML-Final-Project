@@ -159,7 +159,6 @@
     }
 
     function resizeTo(canvas, size){
-        console.log("getting resized image!");
         // size is used for width and height for square images
 
         var cw=canvas.width;
@@ -209,7 +208,6 @@
 						// loop through each row
 						for(var y = 0; y < canvas.height; y++) {
 							if (!isWhite(getRBG(x, y))) {
-								console.log()
 								return x;                        
 							}      
 						}
@@ -224,8 +222,8 @@
 			cropRight = scanX(false);
 			cropWidth = cropRight - cropLeft,
 			cropHeight = cropBottom - cropTop;
-			console.log(cropTop, cropBottom, cropLeft, cropRight);
-			console.log(cropWidth, cropHeight);
+			//console.log(cropTop, cropBottom, cropLeft, cropRight);
+			//console.log(cropWidth, cropHeight);
 		
 		var $croppedCanvas = $("<canvas>").attr({ width: cropWidth, height: cropHeight, id: 'debugCanvas' });
 		
@@ -258,10 +256,10 @@
 		
 		if ($croppedCanvas[0].width > $croppedCanvas[0].height) {
 			scale = targetWidth / $croppedCanvas[0].width;
-			console.log("scaling with respect to width");
+			//console.log("scaling with respect to width");
 		} else {
 			scale = targetHeight / $croppedCanvas[0].height;
-			console.log("scaling with respect to height");
+			//console.log("scaling with respect to height");
 		}
 		
 		var newWidth = $croppedCanvas[0].width*scale;
