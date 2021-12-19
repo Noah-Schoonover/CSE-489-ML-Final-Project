@@ -230,22 +230,31 @@ const socket = new WebSocket('ws://128.199.4.66:8765');
 // prototype to	start drawing on touch using canvas moveTo and lineTo
 $.fn.drawTouch = function() {
   var start = function(e) {
-        e = e.originalEvent;
+    e = e.originalEvent;
     ctx.beginPath();
-    x = e.changedTouches[0].pageX;
-    y = e.changedTouches[0].pageY-44;
+    var touch = e.changedTouches[0];
+    x = touch.pageX-touch.target.offsetLeft;
+    y = touch.pageY-touch.target.offsetTop;
     ctx.moveTo(x,y);
   };
   var move = function(e) {
     e.preventDefault();
-        e = e.originalEvent;
-    x = e.changedTouches[0].pageX;
-    y = e.changedTouches[0].pageY-44;
+    e = e.originalEvent;
+    var touch = e.changedTouches[0];
+    x = touch.pageX-touch.target.offsetLeft;
+    y = touch.pageY-touch.target.offsetTop;
+    console.log("move   x: " + x + "     y: " + y);
     ctx.lineTo(x,y);
     ctx.stroke();
   };
+  var finish = function(e) {
+    var can=document.getElementById("canvas");
+    resizeTo(can, 28);
+  };
   $(this).on("touchstart", start);
   $(this).on("touchmove", move);
+  $(this).on("touchend", finish);
+  $(this).on("touchcancel", finish);
 };
 
 // prototype to	start drawing on pointer(microsoft ie) using canvas moveTo and lineTo
