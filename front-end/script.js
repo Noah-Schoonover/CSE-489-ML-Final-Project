@@ -164,8 +164,8 @@ var centeredCanvas=document.createElement("canvas");
 centeredCanvas.id = 'debugCanvas'
 
 //100, 55, 200, 285
-var targetWidth = 100;
-var targetHeight = 230;
+var targetWidth = 190;
+var targetHeight = 270;
 var scale = 1;
 
 if ($croppedCanvas[0].width > $croppedCanvas[0].height) {
