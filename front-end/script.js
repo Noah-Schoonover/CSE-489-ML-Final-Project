@@ -229,23 +229,29 @@ const socket = new WebSocket('ws://128.199.4.66:8765');
 
 // prototype to	start drawing on touch using canvas moveTo and lineTo
 $.fn.drawTouch = function() {
+  var lastX;
+  var lastY;
   var start = function(e) {
     e = e.originalEvent;
-    ctx.beginPath();
     var touch = e.changedTouches[0];
-    x = touch.pageX-touch.target.offsetLeft;
-    y = touch.pageY-touch.target.offsetTop;
-    ctx.moveTo(x,y);
+    lastX = touch.pageX-touch.target.offsetLeft;
+    lastY = touch.pageY-touch.target.offsetTop;
   };
   var move = function(e) {
-    e.preventDefault();
+    e.preventDefault(); // prevent scrolling
+
     e = e.originalEvent;
     var touch = e.changedTouches[0];
     x = touch.pageX-touch.target.offsetLeft;
     y = touch.pageY-touch.target.offsetTop;
-    console.log("move   x: " + x + "     y: " + y);
+
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
     ctx.lineTo(x,y);
     ctx.stroke();
+
+    lastX = x;
+    lastY = y;
   };
   var finish = function(e) {
     var can=document.getElementById("canvas");
