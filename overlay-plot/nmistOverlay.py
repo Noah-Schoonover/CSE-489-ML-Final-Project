@@ -1,6 +1,5 @@
 import numpy as np
 from keras.datasets import mnist
-import ConsolePlot as cp
 from matplotlib import pyplot as plt
 
 (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
