@@ -189,15 +189,19 @@ $("body").
   append("<p  id='debugCanvas'>centered canvas:</p>").
   append(centeredCanvas);
 
-var tempCanvas=document.createElement("canvas");
+    var tempCanvas=document.createElement("canvas");
     var tctx=tempCanvas.getContext("2d")
     tempCanvas.width=size;
     tempCanvas.height=size;
-tctx.drawImage(centeredCanvas,0,0,size,size);
-    var img = new Image();
-    img.src = tempCanvas.toDataURL();
-    $("img").remove();
-    $("#canvasDiv").append(img);
+    tctx.drawImage(centeredCanvas,0,0,size,size);
+    $("#smallCanvasImg").remove();
+    var img = $(document.createElement('img'));
+    img.attr({
+      src: tempCanvas.toDataURL(),
+      id: 'smallCanvasImg',
+    });
+    img.appendTo("#canvasDiv");
+    //$("#canvasDiv").append(img);
     imgData = tctx.getImageData(0,0,tempCanvas.width,tempCanvas.height);
 
     gsData = new Array(imgData.data.length / 4);
